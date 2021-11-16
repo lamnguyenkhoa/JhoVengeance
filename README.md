@@ -60,14 +60,6 @@ Project is created with:
 - Unity 2021.1.13f1
 - Blender 2.93.5
 
-## Using Images
-
-You can use images/gif by adding them to a folder in your repo:
-
-<p align="center">
-  <img src="Gifs/menu.gif" >
-</p>
-
 ![demo_image](Images/demo_images.png "demo game images")
 
 ## References and External Resources
