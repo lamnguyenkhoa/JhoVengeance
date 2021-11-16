@@ -1,0 +1,118 @@
+Shader "Unlit/OutlineTexture"
+{
+	Properties
+	{
+		_MainTex("Texture", 2D) = "white" {}
+		_OutlineColor("Outline Color", Color) = (0, 0, 0, 1)
+		_OutlineWidth("Outline Width", Range(0, .2)) = 0.05
+	}
+
+		SubShader //Phong
+		{
+			Tags
+			{
+				"RenderType" = "Opaque"
+				"IgnoreProjector" = "True"
+
+			}
+			Tags { "RenderType" = "Opaque" }
+		LOD 3000
+
+		Pass
+		{
+			Cull off
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+			// make fog work
+			#pragma multi_compile_fog
+
+
+			#include "UnityCG.cginc"
+
+			struct appdata
+			{
+				float4 vertex : POSITION;
+				float2 uv : TEXCOORD0;
+			};
+
+			struct v2f
+			{
+				float2 uv : TEXCOORD0;
+				UNITY_FOG_COORDS(1)
+				float4 vertex : SV_POSITION;
+			};
+
+			sampler2D _MainTex;
+			float4 _MainTex_ST;
+
+			v2f vert(appdata v)
+			{
+				v2f o;
+				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+				UNITY_TRANSFER_FOG(o,o.vertex);
+				return o;
+			}
+
+			fixed4 frag(v2f i) : SV_Target
+			{
+				// sample the texture
+				fixed4 col = tex2D(_MainTex, i.uv);
+			// apply fog
+			UNITY_APPLY_FOG(i.fogCoord, col);
+			return col;
+		}
+		ENDCG
+	}
+			Pass
+			{
+
+
+				Cull front
+				Zwrite off
+				CGPROGRAM
+				#pragma vertex vert
+				#pragma fragment frag
+
+				#include "UnityCG.cginc"
+
+
+
+				struct vertIn
+				{
+					float4 vertex : POSITION;
+					float3 normal : NORMAL;
+				};
+
+				struct fragVert
+				{
+					float4 svPos : SV_POSITION;
+				};
+
+				float4 _OutlineColor;
+				float _OutlineWidth;
+
+				fragVert vert(vertIn v)
+				{
+					fragVert output;
+
+					v.vertex *= (1 + _OutlineWidth);
+
+					output.svPos = UnityObjectToClipPos(v.vertex);
+
+					return output;
+				}
+
+				fixed4 frag(fragVert input) : SV_TARGET
+				{
+					return _OutlineColor;
+				}
+
+				ENDCG
+			}
+		}
+
+			FallBack "Standard"
+}
+
